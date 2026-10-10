@@ -1,3 +1,3 @@
 all:
-	gcc -ggdb -Wall main.c -o demo
+	gcc -std=c99 -ggdb -Wall cube_ascii.c -o demo
 	.\demo.exe
