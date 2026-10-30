@@ -1,41 +1,36 @@
 org 0x100
 section .text
 
-start:  
+start:
+	;; 320*200, 256 colors  
         mov ax, 0x13
         int 0x10
         mov ax, 0xA000
         mov es, ax
-        xor bl, bl
-        palette:
-                mov dh, bl
-                mov ch, bl
-                mov cl, bl
-                add bl, 32
-                mov ax, 0x1010
-                int 0x10
-                inc bl
-        jnz palette
-l:      
-        xor si, si
-        mov cx, 64000
-        draw:
-               push dx
-               xor dx, dx
-               mov ax, si
-               mov bx, 320
-               div bx
-               add ax, dx
-               pop dx
-               add ax, dx
+	jmp l
 
-               mov byte [es: si], al
-               inc si      
-        loop draw
-        inc dx   
+plot:
+	push di
+	push ax
+	push dx
+	mov dx, 320
+	mul dx
+	pop dx
+	add ax, bx
+	mov di, ax
+	pop ax
+	mov al, 0x0F
+	stosb
+	pop di	
+	ret
+
+l:
+     	 
         in al, 0x60
         dec al   
-jnz l   
+
+jnz l
+   
 mov ax, 3
 int 0x10
-ret  
+ret 
