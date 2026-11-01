@@ -35,20 +35,24 @@ void init_sin()
 void draw_plasma(word x, word y, word w, word h, dword t)
 {
   byte c;
-  word c1,c2,c3,v1,v2;
+  word c1,c2,c3,c4;
   word i,j;
-
-  v1 = SIN256[(t*3)%256];
-  v2 = SIN256[(64+t*5)%256];
+  word cx = 160;
+  word cy = 100;
+  
   for(j = y; j < y + h; j++){
-    c3 = SIN256[(j*3 + t*3) % 256];
-    for(i = x; i < x + w; i++) {
-      c1 = SIN256[(i*3 + t*2) % 256];
-      c2 = SIN256[((i*v1)/w + (j*v2)/h + t) % 256];
-      c = (byte)((c1 + c2 + c3) / 3);
+      for(i = x; i < x + w; i++) {
+      c1 = SIN256[(i*3+t/2)&255];
+      c2 = SIN256[(j*5+t/3)&255];
+      c = (byte)((c1+c2)/2);
       SETPIX(i,j,c);
     }
   }
+}
+
+void draw_cube()
+{
+
 }
 
 int main()
@@ -83,7 +87,7 @@ int main()
     wait_for_retrace();
     blit4(framebuf,0,0,80,50);
 #else
-    draw_plasma(80,50,160,100,t);
+    draw_plasma(80, 5,160,100,t);
     wait_for_retrace();
     memcpy(VGA,framebuf,SCREEN_WIDTH*SCREEN_HEIGHT);
 #endif
@@ -91,5 +95,5 @@ int main()
   }
   set_text_mode();
   return 0;
-}
-
+}              
+

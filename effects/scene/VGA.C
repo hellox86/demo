@@ -8,7 +8,8 @@
 #define VGA_256_COLOR_MODE 0x13
 #define TEXT_MODE 0x03
 
-byte far * const VGA=(byte far *)0xA0000000L;
+// mov es, 0xa0000
+byte far * const VGA=(byte far *)0xA0000000L; // pointer to video memory
 
 /* dimensions of each page and offset */
 word vga_width = 320;
@@ -145,10 +146,10 @@ void blit2page( byte far *s[], word page, int x, int y, int w, int h )
     for(j=0; j<h; j++)
     {
       memcpy(
-	VGA + page + screen_offset,
-	s[p] + bitmap_offset ,
-	w >> 2
-	);
+   VGA + page + screen_offset,
+   s[p] + bitmap_offset ,
+   w >> 2
+   );
       bitmap_offset += vga_width >> 2;
       screen_offset += vga_width >> 2;
     }
@@ -170,9 +171,9 @@ void blit4( byte far *s, int x, int y, int w, int h )
   {
     for(i = 0; i < 4; i++) {
       memcpy(
-	VGA + screen_offset,
-	s + bitmap_offset ,
-	w
+   VGA + screen_offset,
+   s + bitmap_offset ,
+   w
       );
       screen_offset += vga_width >> 2;
     }
