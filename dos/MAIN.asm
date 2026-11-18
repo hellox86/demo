@@ -6,22 +6,28 @@ sintab 	dd 0, 1608, 3215, 4821, 6423, 8022, 9616, 11204, 12785, 14359, 15923, 17
 	dd -1608, -3215, -4821, -6423, -8022, -9616, -11204, -12785, -14359, -15923, -17479, -19024, -20557, -22078, -23586, -25079, -26557, -28020, -29465, -30893, -32302, -33692, -35061, -36409, -37736, -39039, -40319, -41575, -42806, -44011, -45189, -46340, -47464, -48558, -49624, -50660, -51665, -52639, -53581, -54491, -55368, -56212, -57022, -57797, -58538, -59243, -59913, -60547, -61144, -61705, -62228, -62714, -63162, -63571, -63943, -64276, -64571, -64826, -65043, -65220, -65358, -65457, -65516, -65536 
 	dd -65516, -65457, -65358, -65220, -65043, -64826, -64571, -64276, -63943, -63571, -63162, -62714, -62228, -61705, -61144, -60547, -59913, -59243, -58538, -57797, -57022, -56212, -55368, -54491, -53581, -52639, -51665, -50660, -49624, -48558, -47464, -46340, -45189, -44011, -42806, -41575, -40319, -39039, -37736, -36409, -35061, -33692, -32302, -30893, -29465, -28020, -26557, -25079, -23586, -22078, -20557, -19024, -17479, -15923, -14359, -12785, -11204, -9616, -8022, -6423, -4821, -3215, -1608
 
-angle_u dd 4
-	
+angle_u dd 10	
 angle dd 0
 
 ynp dd 0
 	
-x0 dw 0
-y0 dw 0
-x1 dw 0
-y1 dw 0
-dx1 dw 0
-dy1 dw 0
-err dw 0
-sx dw 0
-sy dw 0
+x0 dd 0
+y0 dd 0
+x1 dd 0
+y1 dd 0
+dx1 dd 0
+dy1 dd 0
+err dd 0
+sx dd 0
+sy dd 0
+xp dd 0
+yp dd 0
+x dd 0
+y dd 0
+z dd 0
 	
+vs2:	times 16 dd 0
+
 vs 	dd  -100,  -100, -100    
         dd 100,  -100, -100
         dd -100, 100, -100
@@ -58,92 +64,93 @@ plot:
 	ret
 
 line:
-	push ax
-	push bx
-	push cx
-	push dx
-	mov word [x0], ax
-	mov word [x1], bx
-	mov word [y0], cx
-	mov word [y1], dx
+	push eax
+	push ebx
+	push ecx
+	push edx
+	mov dword [x0], eax
+	mov dword [x1], ebx
+	mov dword [y0], ecx
+	mov dword [y1], edx
 	
-	sub bx, ax
+	sub ebx, eax
 	jl .neg_sx
-	mov word [sx], 1
+	mov dword [sx], 1
 	jmp .cx
 .neg_sx:
-	mov word [sx], -1
+	mov [sx], -1
 .cx:
-	mov dx, bx
-	sar dx, 15
-	xor bx, dx
-	sub bx, dx
-	mov word [dx1], bx
-	pop dx
+	mov edx, ebx
+	sar edx, 31
+	xor ebx, edx
+	sub ebx, edx
+	mov dword [dx1], ebx
+	pop edx
 	
-	push dx
-	sub dx, cx
+	push edx
+	sub edx, ecx
 	jl .neg_sy
-	mov word [sy], 1
+	mov dword [sy], 1
 	jmp .cy
 .neg_sy:
-	mov word [sy], -1
+	mov dword [sy], -1
 .cy:
-	mov ax, dx
-	sar ax, 15
-	xor dx, ax
-	sub dx, ax
-	neg dx
-	mov word [dy1], dx
+	mov eax, edx
+	sar eax, 31
+	xor edx, eax
+	sub edx, eax
+	neg edx
+	mov dword [dy1], edx
 
-	add dx, word [dx1]
-	mov word [err], dx
+	add edx, [dx1]
+	mov dword [err], edx
 	
 .loop:
-	mov ax, word [y0]
-	mov bx, word [x0]
+	mov eax, [y0]
+	mov ebx, [x0]
 	call plot
-	cmp ax, word [y1]
+	cmp eax, [y1]
 	jne .s
 
-	cmp bx, word [x1]
+	cmp ebx, [x1]
 	jz .end
 .s:
-	mov cx, word [err]
-	sal cx, 1
-	cmp cx, word [dy1]
+	mov ecx, [err]
+	sal ecx, 1
+	cmp ecx, [dy1]
 	jge .x
-	cmp cx, word [dx1]
+	cmp ecx, [dx1]
 	jle .y
 	jmp .loop
 	
 	
 .x:
-	mov ax, word [err]
-	add ax, word [dy1]
-	mov word [err], ax
-	mov ax, word [x0]
-	add ax, word [sx]
-	mov word [x0], ax
-	cmp cx, word [dx1]
+	mov eax, [err]
+	add eax, [dy1]
+	mov dword [err], eax
+	mov eax, [x0]
+	add eax, [sx]
+	mov dword [x0], eax
+	cmp ecx, [dx1]
 	jle .y
 	jmp .loop
 .y:
-	mov ax, word [err]
-	add ax, word [dx1]
-	mov word [err], ax
-	mov ax, word [y0]
-	add ax, word [sy]
-	mov word [y0], ax
+	mov eax, [err]
+	add eax, [dx1]
+	mov dword [err], eax
+	mov eax, [y0]
+	add eax, [sy]
+	mov dword [y0], eax
 	jmp .loop
 .end:
-	pop dx
-	pop cx
-	pop bx
-	pop ax
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
 	ret
 
 clear_scr:
+	push ax
 	push di
 	push cx
 	push dx
@@ -154,6 +161,7 @@ clear_scr:
 	pop dx
 	pop cx
 	pop di
+	pop ax
 	ret
 
 loop:
@@ -181,7 +189,9 @@ loop:
 	mov eax, [sintab + edi*4]
 
 	lea esi, [vs]
-	mov cx, 8
+	lea edi, [vs2]
+	
+	mov ecx, 8
 .loop:
 	push ecx
 	mov ecx, [esi+4]
@@ -191,7 +201,7 @@ loop:
 	imul edx, ebx
 	sub ecx, edx
 	sar ecx, 16
-	mov [esi+4], ecx
+	mov [y], ecx
 
 	mov ecx, [ynp]
 	imul ecx, ebx
@@ -199,7 +209,7 @@ loop:
 	imul edx, eax
 	add ecx, edx
 	sar ecx, 16
-	mov [esi+8], ecx	
+	mov [z], ecx	
 	mov ecx, [esi]
 	mov dword [ynp], ecx
 	
@@ -208,7 +218,7 @@ loop:
 	imul edx, ebx
 	add ecx, edx
 	sar ecx, 16	
-	mov [esi], ecx
+	mov [x], ecx
 	
 	mov ecx, [ynp]
 	imul ecx, ebx
@@ -217,45 +227,56 @@ loop:
 	imul edx, eax
 	add ecx, edx
 	sar ecx, 16
-	mov [esi+8], ecx	
-
-	mov eax, [esi]
-	mov ebx, [esi+4]
-	mov ecx, [esi+8]
-	shl eax, 8
-	add ecx, 256
-	cdq
-	idiv ecx
-	add eax, 160
-	mov edx, eax
-	mov eax, ebx
-	shl eax, 8
-	cdq
-	idiv ecx
-	mov ebx, eax
-	add ebx, 100
-
-	mov eax, edx
-
-	mov edx, eax
-	mov eax, ebx
-	mov ebx, edx
+	mov [z], ecx	
 	
-	call plot
+	mov eax, [x]
+	mov ebx, [y]
+	mov ecx, [z]
+	add ecx, 256
+
+	cdq
+	idiv ecx
+	mov [xp], eax
+
+	mov eax, ebx
+	cdq
+	idiv ecx
+	mov [yp], eax
+	
+	mov ebx, [xp]
+
+	mov [edi], ebx
+	mov [edi+4], eax 
+		
 	add esi, 12
+	add edi, 8
+	
 	pop ecx
-	dec cx
+	dec ecx
 	jnz .loop
+	mov edi, [vs2]
+	
+	mov eax, [edi]
+	mov ebx, [edi+8]
+	mov ecx, [edi+4]
+	mov edx, [edi+12]
+	sar eax, 16
+	sar ebx, 16	
+	sar ecx, 16
+	sar edx, 16
+	
+	
+	call line
+	
 	pop edx
 	pop ebx
 	pop edi
 	pop esi
 	pop eax
-	
 	in al, 0x60
 	dec al
 	jnz loop
- 
+	
 text_mode:
 	mov ax, 3 
 	int 0x10 
