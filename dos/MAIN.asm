@@ -25,6 +25,7 @@ yp dd 0
 x dd 0
 y dd 0
 z dd 0
+hello db 'Hello, World', 0xA, '$'
 	
 vs2:	times 16 dd 0
 
@@ -202,7 +203,7 @@ loop:
 	sub ecx, edx
 	sar ecx, 16
 	mov [y], ecx
-
+ 
 	mov ecx, [ynp]
 	imul ecx, ebx
 	mov edx, [esi+8]
@@ -223,7 +224,7 @@ loop:
 	mov ecx, [ynp]
 	imul ecx, ebx
 	neg ecx
-	mov edx, [esi+8]
+	mov edx, [z]
 	imul edx, eax
 	add ecx, edx
 	sar ecx, 16
@@ -260,14 +261,8 @@ loop:
 	mov ebx, [edi+8]
 	mov ecx, [edi+4]
 	mov edx, [edi+12]
-	sar eax, 16
-	sar ebx, 16	
-	sar ecx, 16
-	sar edx, 16
 	
-	
-	call line
-	
+
 	pop edx
 	pop ebx
 	pop edi
@@ -277,7 +272,11 @@ loop:
 	dec al
 	jnz loop
 	
-text_mode:
+text_mode:	
 	mov ax, 3 
-	int 0x10 
+	int 0x10
+	mov ah, 0x09
+	mov dx, hello
+	int 0x21
+	
  	ret
