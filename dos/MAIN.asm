@@ -6,7 +6,7 @@ sintab 	dd 0, 1608, 3215, 4821, 6423, 8022, 9616, 11204, 12785, 14359, 15923, 17
 	dd -1608, -3215, -4821, -6423, -8022, -9616, -11204, -12785, -14359, -15923, -17479, -19024, -20557, -22078, -23586, -25079, -26557, -28020, -29465, -30893, -32302, -33692, -35061, -36409, -37736, -39039, -40319, -41575, -42806, -44011, -45189, -46340, -47464, -48558, -49624, -50660, -51665, -52639, -53581, -54491, -55368, -56212, -57022, -57797, -58538, -59243, -59913, -60547, -61144, -61705, -62228, -62714, -63162, -63571, -63943, -64276, -64571, -64826, -65043, -65220, -65358, -65457, -65516, -65536 
 	dd -65516, -65457, -65358, -65220, -65043, -64826, -64571, -64276, -63943, -63571, -63162, -62714, -62228, -61705, -61144, -60547, -59913, -59243, -58538, -57797, -57022, -56212, -55368, -54491, -53581, -52639, -51665, -50660, -49624, -48558, -47464, -46340, -45189, -44011, -42806, -41575, -40319, -39039, -37736, -36409, -35061, -33692, -32302, -30893, -29465, -28020, -26557, -25079, -23586, -22078, -20557, -19024, -17479, -15923, -14359, -12785, -11204, -9616, -8022, -6423, -4821, -3215, -1608
 
-angle_u dd 10	
+angle_u dd 3	
 angle dd 0
 
 ynp dd 0
@@ -25,7 +25,8 @@ yp dd 0
 x dd 0
 y dd 0
 z dd 0
-hello db 'Hello, World', 0xA, '$'
+sinv dd 0
+cosv dd 0
 	
 vs2:	times 16 dd 0
 
@@ -39,7 +40,22 @@ vs 	dd  -100,  -100, -100
         dd -100, 100, 100
  	dd 100, 100, 100
 
+edges 	dd 0, 1
+	dd 0, 2
+	dd 1, 3
+	dd 2, 3
 
+	dd 4, 5
+	dd 4, 6
+	dd 5, 7
+	dd 6, 7
+
+	dd 0, 4
+	dd 1, 5
+	dd 2, 6
+	dd 3, 7
+
+	
 section .text
 start:
 	mov ax, 0x13
@@ -52,8 +68,8 @@ plot:
 	push edi
 	push ebx
 	mov ebx, eax
-	shl eax, 6
-	shl ebx, 8
+	sal eax, 6
+	sal ebx, 8
 	add eax, ebx
 	pop ebx
 	add eax, ebx
@@ -79,7 +95,7 @@ line:
 	mov dword [sx], 1
 	jmp .cx
 .neg_sx:
-	mov [sx], -1
+	mov dword [sx], -1
 .cx:
 	mov edx, ebx
 	sar edx, 31
@@ -183,12 +199,14 @@ loop:
 
 	lea esi, [sintab + edi*4]
 	mov ebx, [esi]
-
+	mov [sinv], ebx
+	
 	;; четверть круга 256
 	add edi, 64
 	and edi, 255
 	mov eax, [sintab + edi*4]
-
+	mov [cosv], eax
+	
 	lea esi, [vs]
 	lea edi, [vs2]
 	
@@ -197,35 +215,35 @@ loop:
 	push ecx
 	mov ecx, [esi+4]
 	mov dword [ynp], ecx
-	imul ecx, eax
+	imul ecx, [cosv]
 	mov edx, [esi+8]
-	imul edx, ebx
+	imul edx, [sinv]
 	sub ecx, edx
 	sar ecx, 16
 	mov [y], ecx
  
 	mov ecx, [ynp]
-	imul ecx, ebx
+	imul ecx, [sinv]
 	mov edx, [esi+8]
-	imul edx, eax
+	imul edx, [cosv]
 	add ecx, edx
 	sar ecx, 16
 	mov [z], ecx	
 	mov ecx, [esi]
 	mov dword [ynp], ecx
 	
-	imul ecx, eax	
-	mov edx, [esi+8]
-	imul edx, ebx
+	imul ecx, [cosv]
+	mov edx, [z]
+	imul edx, [sinv]
 	add ecx, edx
 	sar ecx, 16	
 	mov [x], ecx
 	
 	mov ecx, [ynp]
-	imul ecx, ebx
+	imul ecx, [sinv]
 	neg ecx
 	mov edx, [z]
-	imul edx, eax
+	imul edx, [cosv]
 	add ecx, edx
 	sar ecx, 16
 	mov [z], ecx	
@@ -233,15 +251,20 @@ loop:
 	mov eax, [x]
 	mov ebx, [y]
 	mov ecx, [z]
-	add ecx, 256
-
+	add ecx, 1024
+	sal eax, 8
+	
 	cdq
 	idiv ecx
+	add eax, 160
 	mov [xp], eax
 
 	mov eax, ebx
+	sal eax, 8
+	
 	cdq
 	idiv ecx
+	add eax, 100
 	mov [yp], eax
 	
 	mov ebx, [xp]
@@ -255,14 +278,27 @@ loop:
 	pop ecx
 	dec ecx
 	jnz .loop
-	mov edi, [vs2]
-	
-	mov eax, [edi]
-	mov ebx, [edi+8]
-	mov ecx, [edi+4]
-	mov edx, [edi+12]
-	
 
+	lea edi, [vs2]
+	lea esi, [edges]
+	mov ecx, 12
+.edj:
+	push ecx
+	mov ecx, [esi]
+	mov edx, [esi+4]
+	
+	mov eax, [edi+ecx*8]
+	mov ebx, [edi+edx*8]
+	mov ecx, [edi+ecx*8 + 4]
+	mov edx, [edi+edx*8 + 4]
+	
+	call line
+	add esi, 8
+	pop ecx
+	dec ecx
+	jnz .edj
+	
+	
 	pop edx
 	pop ebx
 	pop edi
@@ -275,8 +311,4 @@ loop:
 text_mode:	
 	mov ax, 3 
 	int 0x10
-	mov ah, 0x09
-	mov dx, hello
-	int 0x21
-	
  	ret

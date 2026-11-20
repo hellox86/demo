@@ -1,6 +1,10 @@
 org 0x100 ;; Смещение 256 байт(DOS)
+section .data
+hello db 'Hello, World!', 0xA, '$'
+	
 section .text
 
+	
 start:
     mov ax, 0x13 ;; 13 графический режим(320x200, 256 colors)
     int 0x10
@@ -54,4 +58,8 @@ jnz l
 
 mov ax, 0x3 ;текстовый режим
 int 0x10 ;ставим текстовый режим
+mov ah, 0x09
+mov dx, hello
+int 0x21
+
 ret
