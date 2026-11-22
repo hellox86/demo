@@ -30,6 +30,7 @@ z dd 0
 sinv dd 0
 cosv dd 0
 ccolor db 0
+bbuf_addr dw 0
 	
 vs2:	times 16 dd 0
 
@@ -63,7 +64,10 @@ section .text
 start:
 	mov ax, 0x13
 	int 0x10
-	mov ax, 0xA000
+	
+	mov ax, es
+	add ax, 0x1000
+	mov [bbuf_addr], ax
 	mov es, ax
 	jmp loop
 plot:
@@ -79,7 +83,7 @@ plot:
 	mov edi, eax
 	mov al, byte [ccolor]
 	
-	mov byte [bbuf+edi], al
+	mov byte [es:edi], al
 	
 	pop edi
 	pop eax
@@ -172,18 +176,18 @@ line:
 	ret
 
 clear_scr:
-	push ax
+	push eax
 	push di
 	push cx
 	push dx
 	xor di, di
-	xor al, al
-	mov cx, 64000
-	rep stosb
+	xor eax, eax
+	mov cx, 16000
+	rep stosd
 	pop dx
 	pop cx
 	pop di
-	pop ax
+	pop eax
 	ret
 
 loop:
@@ -303,8 +307,22 @@ loop:
 	pop ecx
 	dec ecx
 	jnz .edj
-
-
+	
+	push ds
+	push es
+	mov ax, [bbuf_addr]
+	mov ds, ax
+	
+	mov ax, 0xA000
+	mov es, ax
+	xor si, si
+	xor di, di
+	mov cx, 16000
+	rep movsd
+	pop es
+	pop ds
+	
+	
 	pop edx
 	pop ebx
 	pop edi
