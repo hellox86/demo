@@ -1,4 +1,6 @@
 org 0x100
+section .bss
+bbuf resb 64000
 	
 section .data
 sintab 	dd 0, 1608, 3215, 4821, 6423, 8022, 9616, 11204, 12785, 14359, 15923, 17479, 19024, 20557, 22078, 23586, 25079, 26557, 28020, 29465, 30893, 32302, 33692, 35061, 36409, 37736, 39039, 40319, 41575, 42806, 44011, 45189, 46340, 47464, 48558, 49624, 50660, 51665, 52639, 53581, 54491, 55368, 56212, 57022, 57797, 58538, 59243, 59913, 60547, 61144, 61705, 62228, 62714, 63162, 63571, 63943, 64276, 64571, 64826, 65043, 65220, 65358, 65457, 65516, 65536 
@@ -27,6 +29,7 @@ y dd 0
 z dd 0
 sinv dd 0
 cosv dd 0
+ccolor db 0
 	
 vs2:	times 16 dd 0
 
@@ -74,8 +77,10 @@ plot:
 	pop ebx
 	add eax, ebx
 	mov edi, eax
+	mov al, byte [ccolor]
 	
-	mov byte [es:edi], 0x0F
+	mov byte [bbuf+edi], al
+	
 	pop edi
 	pop eax
 	ret
@@ -251,7 +256,7 @@ loop:
 	mov eax, [x]
 	mov ebx, [y]
 	mov ecx, [z]
-	add ecx, 1024
+	add ecx, 512
 	sal eax, 8
 	
 	cdq
@@ -282,6 +287,7 @@ loop:
 	lea edi, [vs2]
 	lea esi, [edges]
 	mov ecx, 12
+	mov byte [ccolor], 0x0F
 .edj:
 	push ecx
 	mov ecx, [esi]
@@ -297,8 +303,8 @@ loop:
 	pop ecx
 	dec ecx
 	jnz .edj
-	
-	
+
+
 	pop edx
 	pop ebx
 	pop edi

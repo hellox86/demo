@@ -1,4 +1,4 @@
 all:
-	nasm.exe main.asm -fbin -o main.com 
+	nasm.exe CUBE.ASM -fbin -o CUBE.COM 
 
-	main.com
+	CUBE.COM
