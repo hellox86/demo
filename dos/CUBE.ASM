@@ -59,13 +59,6 @@ edges 	dd 0, 1
 	dd 2, 6
 	dd 3, 7
 
-faces 	dd 0, 1, 2, 3
-	dd 4, 5, 6, 7
-	dd 0, 2, 4, 6
-	dd 1, 3, 7, 5
-	dd 0, 1, 4, 5
-	dd 2, 3, 7, 6
-
 section .text
 start:
 	mov ax, 0x13
@@ -305,6 +298,7 @@ loop:
 	
 	mov eax, [edi+ecx*8]
 	mov ebx, [edi+edx*8]
+
 	mov ecx, [edi+ecx*8 + 4]
 	mov edx, [edi+edx*8 + 4]
 	
@@ -314,7 +308,35 @@ loop:
 	dec ecx
 	jnz .edj
 
-	;;  TODO: scanline fill algorithm
+	;; TODO: 1 эффект будет вращающейся куб из стороны в сторону с затягивающим backgroundом с партиклами
+
+	mov byte [ccolor], 0x0D
+
+	push ds
+
+	mov ax, [bbuf_addr]
+	mov ds, ax
+	
+	xor di, di
+	xor si, si
+	xor ebx, ebx
+	mov dx, 320 / 4        
+.x:
+	xor eax, eax          
+	mov cx, 200            
+.y:
+	xor eax, ds:[si]       
+	mov es:[di], eax       
+	add si, 320            
+	add di, 320            
+	dec cx
+	jnz .y
+
+	sub si, 320 * 200 - 4  
+	sub di, 320 * 200 - 4
+	dec dx
+	jnz .x
+	pop ds
 	
 	push ds
 	push es
